@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Add or Remove Task Page</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="createproject.html">Create Project</a></li>
+            <li><a href="addtask.html" class="active">Create or Add Task</a></li>
+            <li><a href="projects.html">Projects</a></li>
+        </ul>
+        <div class="about"><a href="about.html">About</a></div>
+    </nav>
+
+    <div>
+        <div class="form-container">
+            <h1>Create a New Task</h1>
+            <form id="newTaskForm">
+                <label for="name">Task Name:</label>
+                <input type="text" id="name" name="name" required>
+
+                <label for="description">Task Description:</label>
+                <input type="text" id="description" name="description" required>
+                <button onClick="newTask()" type="submit">Create New Task</button>
+            </form>
+        </div>
+        
+        <hr width="100%" size="2" color="black">
+
+        <div class="form-container">
+            <h1>Add Task to a Project</h1>
+            <form id="addTaskForm">
+                <label for="taskId">Task Id:</label>
+                <input type="number" id="taskId" name="taskId" required>
+
+                <label for="projectId">Project Id:</label>
+                <input type="number" id="projectId" name="projectId" required>
+                <button onClick="addTask()" type="submit">Add Task to Project</button>
+            </form>
+        </div>
+
+        <hr width="100%" size="2" color="black">
+
+        <h1>Task List</h1>
+        <div id="tasks-container" class="projects"></div>
+    </div>
+
+    <script>
+        let host = "http://localhost:8080";
+        let container = document.getElementById("tasks-container");
+        let tasks = []
+
+        showTasks();
+
+        async function getAll() {
+            let response = await fetch(host + "/tasks");
+            let result = await response.json();
+            console.log(result);
+            return result
+        }
+
+        async function showTasks(){
+            container.innerHTML = "";
+            if (tasks.length == 0) {
+                tasks = await getAll();
+            }
+
+            for (let task of tasks) {
+                let div = document.createElement("div");
+                div.className = "card";
+
+                let innerHtml = `
+                <div class="container">
+                <h4><b>${task.id}</b></h4> 
+                <p>${task.name}</p>
+                <p>${task.description}</p> 
+                </div>`;
+                div.innerHTML = innerHtml;
+                container.appendChild(div);
+            }
+        }
+
+        async function newTask(){
+            let message = "";
+            let name = document.getElementById("name").value;
+            let description = document.getElementById("description").value;
+
+            let task = {name: name, description: description, stateName: "TODO"};
+
+            let request = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(task),
+            };
+
+            let response = await fetch(host + "/tasks", request);
+            if (response.status == 200) {
+                message = "The task was created successfully!";
+            } 
+            else {
+                message = "Something went wrong! Task data could not be saved";
+            }
+            alert(message);
+            //refresh page
+            location.href = "addtask.html";
+        }
+
+        async function addTask(){
+            let taskId = Number(document.getElementById("taskId").value);
+            let projectId = Number(document.getElementById("projectId").value);
+            console.log(taskId);
+
+            let taskIdDict = {taskId: taskId};
+
+            let request = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(taskIdDict),
+            };
+
+            let response = await fetch(host + "/projects/" + projectId, request);
+            if (response.status == 200) {
+                message = "The task was added successfully!";
+            } 
+            else {
+                message = "Something went wrong! Task data could not be added";
+            }
+            alert(message);
+            //refresh page
+            location.href = "addtask.html";
+        }
+    </script>
+</body>
+</html>

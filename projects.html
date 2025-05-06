@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Project Page</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<nav>
+		<ul>
+			<li><a href="index.html">Home</a></li>
+			<li><a href="createproject.html">Create Project</a></li>
+			<li><a href="addtask.html">Create or Add Task</a></li>
+			<li><a href="projects.html" class="active">Projects</a></li>
+		</ul>
+		<div class="about"><a href="about.html">About</a></div>
+	</nav>
+	<div id="projects-container" class="projects"></div>
+
+	<script>
+        let host = "http://localhost:8080";
+        let projects = [];
+        let container = document.getElementById("projects-container");
+
+        showProjects();
+
+        async function getAll() {
+            let response = await fetch(host + "/projects");
+            let result = await response.json();
+            console.log(result);
+            return result
+        }
+
+        async function showProjects(){
+            container.innerHTML = "";
+            if (projects.length == 0) {
+                projects = await getAll();
+            }
+
+            for (let project of projects) {
+                let div = document.createElement("div");
+                div.className = "card";
+
+                div.onclick = function() {
+                    location.href = `project.html?id=${project.id}`;
+                };
+
+                let innerHtml = `
+                <div class="container">
+                <h4><b>${project.id}</b></h4> 
+                <p>${project.name}</p>
+                <p>${project.type}</p> 
+                </div>`;
+                div.innerHTML = innerHtml;
+                container.appendChild(div);
+            }
+        }
+    </script>
+</body>
+</html>
