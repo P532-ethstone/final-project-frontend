@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>About Page</title>
+	<title>Project Page</title>
 	<link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,5 +16,90 @@
         </ul>
         <div class="about"><a href="about.html">About</a></div>
     </nav>
+
+    <h1 style="text-align: center;">Project Task Board</h1>
+    <div class="board">
+        <div class="column" id="TODO"><h2>To Do</h2></div>
+        <div class="column" id="IN_PROGRESS"><h2>In Progress</h2></div>
+        <div class="column" id="REVIEW"><h2>Review</h2></div>
+        <div class="column" id="DONE"><h2>Done</h2></div>
+    </div>
+
+    <script>
+        let host = "http://localhost:8080";
+        let params = new URLSearchParams(window.location.search);
+        let projectId = params.get("id");
+
+        loadTasks();
+
+        async function loadTasks() {
+            let response = await fetch(host + "/projects/" + projectId + "/tasks");
+            let tasks = await response.json();
+
+            for (let task of tasks) {
+                loadTask(task);
+            }
+        }
+
+        function loadTask(task) {
+            let column = document.getElementById(task.stateName);
+            if (!column){
+                return;
+            }
+
+            let card = document.createElement("div");
+            card.className = "task-card";
+
+            let prevButton = task.stateName === "TODO" ? "" :
+                `<button onclick="moveTask(${task.id}, 'prev', '${task.stateName}')">←</button>`;
+
+            let nextButton = task.stateName === "DONE" ? "" :
+                `<button onclick="moveTask(${task.id}, 'next', '${task.stateName}')">→</button>`;
+
+            card.innerHTML = `
+                <h4>${task.name}</h4>
+                <p>${task.description}</p>
+                <div>
+                    ${prevButton}
+                    ${nextButton}
+                </div>
+            `;
+
+            column.appendChild(card);
+        }
+
+        async function moveTask(taskId, direction, currState) {
+            let command = "";
+            if(direction == "prev"){
+                command = "reverse";
+            }
+            else{
+                console.log(currState);
+                if(currState == "TODO"){
+                    command = "start";
+                }
+                if(currState == "IN_PROGRESS"){
+                    command = "complete";
+                }
+                if(currState == "REVIEW"){
+                    command = "review";
+                }
+            }
+
+            let request = {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            };
+
+            console.log(command);
+            let response = await fetch(host + "/tasks/" + taskId + "/command?command=" + command, request);
+            if (response.status === 200) {
+                location.reload();
+            } 
+            else {
+                // alert("Failed to update task.");
+            }
+        }
+    </script>
 </body>
 </html>

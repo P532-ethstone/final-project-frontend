@@ -85,3 +85,28 @@ img {
 .form-container {
     margin-top: 80px;
 }
+
+.board {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+.column {
+    flex: 1;
+    background-color: #f2f2f2;
+    padding: 10px;
+    border-radius: 8px;
+}
+.column h2 {
+    text-align: center;
+}
+.task-card {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.task-card button {
+    margin: 5px 2px;
+}
